@@ -1,0 +1,64 @@
+@page "/codes"
+@inject HttpClient Http
+
+<h3>Codes</h3>
+
+@if (codes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var code in codes)
+            {
+                <tr>
+                    <td>@code.CodeValue</td>
+                    <td>@code.Category</td>
+                    <td>@code.Price</td>
+                    <td>@code.ValidFrom.ToShortDateString()</td>
+                    <td>@code.ValidTo.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteCode(code.CodeId)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Code> codes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        codes = await Http.GetFromJsonAsync<List<Code>>("api/codes");
+    }
+
+    private async Task DeleteCode(int codeId)
+    {
+        await Http.DeleteAsync($"api/codes/{codeId}");
+        codes = await Http.GetFromJsonAsync<List<Code>>("api/codes");
+    }
+
+    public class Code
+    {
+        public int CodeId { get; set; }
+        public string CodeValue { get; set; }
+        public string Category { get; set; }
+        public decimal Price { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }
+    }
+}
